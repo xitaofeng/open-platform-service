@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="off" monitorInterval="10">
+
+    <properties>
+        <property name="KAFKA_SERVER">${env:KAFKA_SERVER:-192.168.5.153:9092}</property>
+        <property name="LOG_LEVEL">${env:LOG_LEVEL:-DEBUG}</property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1.} - %msg%n"/>
+            <!--<JsonLayout stacktraceAsString ="true"/>-->
+        </Console>
+        <Kafka name="Kafka" topic="runtime-logs">
+            <!--<ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />-->
+            <Property name="bootstrap.servers">${KAFKA_SERVER}</Property>
+            <JsonLayout stacktraceAsString ="true">
+                <KeyValuePair key="hostname" value="${hostName}"/>
+                <KeyValuePair key="service_name" value="开放平台服务"/>
+            </JsonLayout>
+        </Kafka>
+        <Async name="Async">
+            <AppenderRef ref="Kafka"/>
+            <AppenderRef ref="Console"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <Root level="${LOG_LEVEL}">
+            <AppenderRef ref="Async"/>
+        </Root>
+        <Logger name="org.apache.kafka" level="INFO" />
+    </Loggers>
+</Configuration>

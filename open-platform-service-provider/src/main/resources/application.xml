@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://code.alibabatech.com/schema/dubbo
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+        ">
+
+    <context:annotation-config/>
+
+    <bean id="consulPropertyPlaceholderConfigurer" class="com.elecredit.core.ConsulPropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>config.properties</value>
+            </list>
+        </property>
+        <property name="fileEncoding">
+            <value>UTF-8</value>
+        </property>
+    </bean>
+
+    <context:component-scan base-package="com.elecredit.op.**" />
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+        <!--<property name="initialSize" value="${druid.initialSize}" />
+        <property name="maxActive" value="${druid.maxActive}" />
+        <property name="minIdle" value="${druid.minIdle}" />
+        <property name="maxWait" value="${druid.maxWait}" />
+        <property name="removeAbandoned" value="${druid.removeAbandoned}" />
+        <property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />
+        <property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />
+        <property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />
+        <property name="validationQuery" value="${druid.validationQuery}" />
+        <property name="testWhileIdle" value="${druid.testWhileIdle}" />
+        <property name="testOnBorrow" value="${druid.testOnBorrow}" />
+        <property name="testOnReturn" value="${druid.testOnReturn}" />
+        <property name="poolPreparedStatements" value="${druid.poolPreparedStatements}" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="${druid.maxPoolPreparedStatementPerConnectionSize}" />
+        <property name="filters" value="${druid.filters}" />-->
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <dubbo:application name="open-platform-service"/>
+
+    <dubbo:registry protocol="zookeeper" address="${dubbo.zk.host}" file="artifactId.registry.properties"/>
+
+    <dubbo:protocol name="dubbo" port="-1"/>
+
+    <dubbo:service interface="com.elecredit.op.service.PermissionService" ref="permissionService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.EntityPermissionService" ref="entityPermissionService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.MenuService" ref="menuService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.SupplierService" ref="supplierServiceConfig" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.DataServiceService" ref="dataServiceService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.DataServiceApiService" ref="dataServiceApiService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.ServiceApplicationService" ref="serviceApplicationService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.PermissionMenuService" ref="permissionMenuService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.OpenApiService" ref="openApiService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.PaymentRecordService" ref="paymentRecordService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.InvoiceRecordService" ref="invoiceRecordService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.SupplierServiceConfigService" ref="supplierServiceConfigService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.ServiceRequestRecordService" ref="serviceRequestRecordService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.BatchQueryTaskPlanService" ref="batchQueryTaskPlanService" cluster="failfast" delay="-1" timeout="6000"/>
+    <dubbo:service interface="com.elecredit.op.service.BatchQueryTaskService" ref="batchQueryTaskService" cluster="failfast" delay="-1" timeout="6000"/>
+
+    <dubbo:service interface="com.elecredit.op.statistic.ServiceQueryStatisticService" ref="serviceQueryStatisticService" cluster="failfast" delay="-1" timeout="6000"/>
+
+    <bean id="menuService" class="com.elecredit.op.service.MenuServiceImpl" />
+    <bean id="permissionService" class="com.elecredit.op.service.PermissionServiceImpl" />
+    <bean id="entityPermissionService" class="com.elecredit.op.service.EntityPermissionServiceImpl" />
+    <bean id="supplierServiceConfig" class="com.elecredit.op.service.SupplierServiceImpl" />
+    <bean id="dataServiceService" class="com.elecredit.op.service.DataServiceServiceImpl" />
+    <bean id="dataServiceApiService" class="com.elecredit.op.service.DataServiceApiServiceImpl" />
+    <bean id="serviceApplicationService" class="com.elecredit.op.service.ServiceApplicationServiceImpl" />
+    <bean id="permissionMenuService" class="com.elecredit.op.service.PermissionMenuServiceImpl" />
+    <bean id="openApiService" class="com.elecredit.op.service.OpenApiServiceImpl" />
+    <bean id="invoiceRecordService" class="com.elecredit.op.service.InvoiceRecordServiceImpl" />
+    <bean id="paymentRecordService" class="com.elecredit.op.service.PaymentRecordServiceImpl" />
+    <bean id="supplierServiceConfigService" class="com.elecredit.op.service.SupplierServiceConfigServiceImpl" />
+    <bean id="serviceRequestRecordService" class="com.elecredit.op.service.ServiceRequestRecordServiceImpl" />
+    <bean id="batchQueryTaskPlanService" class="com.elecredit.op.service.BatchQueryTaskPlanServiceImpl" />
+    <bean id="batchQueryTaskService" class="com.elecredit.op.service.BatchQueryTaskServiceImpl" />
+
+    <bean id="serviceQueryStatisticService" class="com.elecredit.op.statistic.ServiceQueryStatisticServiceImpl" />
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="txManager" />
+    
+    <import resource="dubbo-consumer.xml"></import>
+    <import resource="spring-config-rabbitmq.xml"></import>
+    <import resource="spring-config-rabbitmq_ucenter.xml"></import>
+    <import resource="spring-mongo.xml"></import>
+</beans>

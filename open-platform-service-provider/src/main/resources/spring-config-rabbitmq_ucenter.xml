@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+    <description>rabbitmq配置</description>
+
+    <!-- 连接配置 -->
+    <rabbit:connection-factory id="connectionFactoryUcenter" virtual-host="${rabbit.ucenter.vhost}" host="${rabbit.host}" port="${rabbit.port}"  username="${rabbit.ucenter.username}" password="${rabbit.ucenter.password}" publisher-confirms="true" />
+
+    <rabbit:admin id="adminUcenter" connection-factory="connectionFactoryUcenter"/>
+
+    <rabbit:queue name="op.customer.add" declared-by="adminUcenter" auto-declare="true" durable="true"></rabbit:queue>
+    <rabbit:queue name="op.customer.delete" declared-by="adminUcenter" auto-declare="true" durable="true"></rabbit:queue>
+    <rabbit:queue name="op.group.delete" declared-by="adminUcenter" auto-declare="true" durable="true"></rabbit:queue>
+    <rabbit:queue name="op.user.delete" declared-by="adminUcenter" auto-declare="true" durable="true"></rabbit:queue>
+
+    <rabbit:topic-exchange name="${rabbit.ucenter.exchange}" declared-by="adminUcenter" durable="false" auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="op.customer.add" pattern="customer.add"/>
+            <rabbit:binding queue="op.customer.delete" pattern="customer.delete"/>
+            <rabbit:binding queue="op.group.delete" pattern="group.delete"/>
+            <rabbit:binding queue="op.user.delete" pattern="user.delete"/>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+    <!-- 监听器 设置acknowledge="manual" 则开启ack机制 默认auto -->
+    <rabbit:listener-container connection-factory="connectionFactoryUcenter" acknowledge="manual" prefetch="1" auto-declare="true">
+        <rabbit:listener ref="customerAddHandler" queues="op.customer.add" admin="adminUcenter" />
+        <rabbit:listener ref="customerDeleteHandler" queues="op.customer.delete" admin="adminUcenter" />
+        <rabbit:listener ref="groupDeleteHandler" queues="op.group.delete" admin="adminUcenter" />
+        <rabbit:listener ref="userDeleteHandler" queues="op.user.delete" admin="adminUcenter" />
+    </rabbit:listener-container>
+
+    <bean id="customerAddHandler" class="com.elecredit.op.mq.CustomerAddHandler"></bean>
+    <bean id="customerDeleteHandler" class="com.elecredit.op.mq.CustomerDeleteHandler"></bean>
+    <bean id="groupDeleteHandler" class="com.elecredit.op.mq.GroupDeleteHandler"></bean>
+    <bean id="userDeleteHandler" class="com.elecredit.op.mq.UserDeleteHandler"></bean>
+
+</beans>
